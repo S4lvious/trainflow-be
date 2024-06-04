@@ -8,5 +8,9 @@ router.get('/getExerciseByDateAndUserId/:userId/:date', authenticateJWT, workout
 router.get('/getAllExercises', authenticateJWT, workoutController.getAllExercises);
 router.post('/addExercise', authenticateJWT, workoutController.addExercise);
 router.get('/viewReport/:userId', authenticateJWT, workoutController.viewReport);
+router.post('/createTrainingCard', authenticateJWT, workoutController.createTrainingCard);
+router.get('/getTrainingCards/:userId', authenticateJWT, workoutController.getTrainingCardByUserId);
+router.get('/getTrainingCardExercises/:id', authenticateJWT, workoutController.getTrainingCardExercisesById);
+
 
 module.exports = router;
