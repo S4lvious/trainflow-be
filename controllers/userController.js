@@ -24,13 +24,20 @@ exports.userList = async (req, res)  => {
 
 exports.getUserById = async (req, res)  => {
     try {
-        await connectDB();
-        const request = new sql.Request();
-        console.log(req.params.id);
-        request.input('id_utente', sql.Int, req.params.id);
-        const result = await request.execute('Gs_user_get');
-        await sql.close(); 
-        res.json(result.recordset);
+        const { id } = req.params;
+        const query = 'SELECT * FROM users WHERE id = ?';
+        connection.query(query, [id], (err, result) => {
+            if (err) {
+                res.status(500).json({ error: 'Errore durante la ricerca dell\'utente' });
+                return;
+            }
+            if (result.length === 0) {
+                res.status(404).json({ error: 'Utente non trovato' });
+                return;
+            }
+            const userData = JSON.parse(JSON.stringify(result[0]));
+            res.status(200).json(userData);
+        });
     } catch (error) {
         res.status(500).json({ message: error });
     }

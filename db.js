@@ -20,3 +20,5 @@ connection.connect((err) => {
   }
   console.log('Connessione al database MySQL riuscita!');
 });
+
+module.exports = connection;
