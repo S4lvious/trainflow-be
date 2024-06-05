@@ -5,6 +5,9 @@ const {
   OAuth2Client
 } = require('google-auth-library');
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+const axios = require('axios');
+const qs = require('qs');
+
 
 exports.login = async (req, res) => {
 
@@ -48,25 +51,84 @@ exports.login = async (req, res) => {
               email: payload.email,
               profile_pic: payload.picture
             };
-            const token = jwt.sign(user, process.env.JWT_SECRET, {
-              expiresIn: '1h'
-            });
-            res.status(200).json({
-              token,
-              userWithOutPassword: user
-            });
-
+            const clientId = process.env.FAT_SECRET_CLIENT_ID;
+            const clientSecret = process.env.FAT_SECRET_CLIENT_SECRET;
+            requestAccessToken(clientId, clientSecret)
+              .then(tokenFatSecret => {
+                const query = 'INSERT INTO fat_secret_user_token (user_id,token,expires_in) VALUES (?, ?, ?)';
+                connection.query(query, [user.id, tokenFatSecret.access_token, tokenFatSecret.expires_in], (err, result) => {
+                  if (err) {
+                    res.status(500).json({
+                      error: 'Errore durante la registrazione'
+                    });
+                    return;
+                  } else {
+                    const token = jwt.sign(user, process.env.JWT_SECRET, {
+                      expiresIn: '1h'
+                    });
+                    res.status(200).json({
+                      token,
+                      userWithOutPassword: user
+                    });
+                  }
+                });
+              })
+              .catch(error => {
+                res.status(500).json({
+                  error: 'Errore durante la registrazione'
+                });
+                return;
+              });
           });
         } else {
           const user = JSON.parse(JSON.stringify(result[0]));
-          console.log('Utente trovato, genero il token', user);
-          
-          const token = jwt.sign(user, process.env.JWT_SECRET, {
-            expiresIn: '1h'
-          });
-          res.status(200).json({
-            token,
-            userWithOutPassword: user
+          const query = 'SELECT * FROM fat_secret_user_token WHERE user_id = ?';
+          connection.query(query, [user.id], (err, result) => {
+            if (err) {
+              res.status(500).json({
+                error: 'Errore durante il login'
+              });
+              return;
+            } else {
+              if (result.length === 0 || result[0].expires_in < Date.now()) {
+                console.log('Token scaduto, lo rinnovo');
+                const clientId = process.env.FAT_SECRET_CLIENT_ID;
+                const clientSecret = process.env.FAT_SECRET_CLIENT_SECRET;
+                requestAccessToken(clientId, clientSecret)
+                  .then(tokenFatSecret => {
+                    console.log('Token rinnovato, lo inserisco nel database', tokenFatSecret);
+                    const query = 'INSERT INTO fat_secret_user_token (user_id,token,expires_in) VALUES (?, ?, ?)';
+                    connection.query(query, [user.id, tokenFatSecret.access_token, tokenFatSecret.expires_in], (err, result) => {
+                      if (err) {
+                        console.log(err);
+                        res.status(500).json({
+                          error: 'Errore durante la registrazione'
+                        });
+                        return;
+                      } else {
+                        const token = jwt.sign(user, process.env.JWT_SECRET, {
+                          expiresIn: '1h'
+                        });    
+                        res.status(200).json({
+                          token,
+                          userWithOutPassword: user
+                        });
+                      }
+                    });
+                  })
+                  .catch(error => {
+                    res.status(500).json({
+                      error: error
+                    });
+                    return;
+                  });
+              } else {
+                res.status(200).json({
+                  token,
+                  userWithOutPassword: user
+                });
+              }
+            }
           });
         }
       });
@@ -86,3 +148,30 @@ exports.login = async (req, res) => {
   }
 
 };
+
+
+
+async function requestAccessToken(clientId, clientSecret) {
+  try {
+    // Costruisci i dati della richiesta di token
+    const data = qs.stringify({
+      grant_type: 'client_credentials',
+      client_id: clientId,
+      client_secret: clientSecret,
+      scope: ['basic', 'premier']
+    });
+
+    // Effettua la richiesta POST per ottenere il token di accesso
+    const response = await axios.post('https://oauth.fatsecret.com/connect/token', data, {
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    });
+
+    // Restituisci il token di accesso dalla risposta
+    return response.data;
+  } catch (error) {
+    // Gestisci eventuali errori nella richiesta del token di accesso
+    throw new Error(`Errore nella richiesta del token di accesso: ${error.response.data.error_description}`);
+  }
+}

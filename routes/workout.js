@@ -11,6 +11,7 @@ router.get('/viewReport/:userId', authenticateJWT, workoutController.viewReport)
 router.post('/createTrainingCard', authenticateJWT, workoutController.createTrainingCard);
 router.get('/getTrainingCards/:userId', authenticateJWT, workoutController.getTrainingCardByUserId);
 router.get('/getTrainingCardExercises/:id', authenticateJWT, workoutController.getTrainingCardExercisesById);
+router.delete('/deleteExercise/:id', authenticateJWT, workoutController.deleteExercise);
 
 
 module.exports = router;

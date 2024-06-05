@@ -16,8 +16,18 @@ exports.getExerciseByDateAndUserId = async (req, res) => {
   console.log(userId);
   console.log(date);
     try {
-      const query = 'SELECT * FROM current_exercise LEFT JOIN exercises ON current_exercise.exercise_id = exercises.id WHERE user_id = ? AND date = ?';
-      connection.query(query, [userId, date], (err, result) => {
+      const query = `
+      SELECT 
+        current_exercise.id AS current_exercise_id, 
+        current_exercise.*, 
+        exercises.*
+      FROM current_exercise 
+      JOIN exercises 
+        ON current_exercise.exercise_id = exercises.id 
+      WHERE current_exercise.user_id = ? 
+        AND current_exercise.date = ?
+    `;
+          connection.query(query, [userId, date], (err, result) => {
         if (err) {
           res.status(500).json({
             error: 'Errore nel recupero degli esercizi'
@@ -25,9 +35,11 @@ exports.getExerciseByDateAndUserId = async (req, res) => {
           return;
         } else {
         const exercises = [];
+        console.log('new',result);
         result.forEach(exercise => {
             exercises.push({
-                id: exercise.id,
+                id: exercise.current_exercise_id,
+                exercise_id: exercise.id,
                 name: exercise.name,
                 date: exercise.date,
                 userId: exercise.user_id,   
@@ -238,6 +250,23 @@ exports.getTrainingCardExercisesById = async (req, res) => {
       return;
     }
     res.status(200).json(results);
+  });
+}
+
+exports.deleteExercise = async (req, res) => {
+  const id = req.params.id;
+  const query = 'DELETE FROM current_exercise WHERE id = ?';
+  connection.query(query, [id], (error, results) => {
+    if (error) {
+      res.status(500).json({
+        error: error
+      });
+      return;
+    }
+    console.log(results);
+    res.status(200).json({
+      message: 'Esercizio eliminato correttamente'
+    });
   });
 }
 
