@@ -13,7 +13,9 @@ const app = express();
 
 // Middleware
 app.use(bodyParser.json());
-app.use(cors());
+app.use(cors({
+    origin: 'https://trainflow-fe-1.onrender.com/'
+}));
 
 // Routes
 app.use('/api', apiRouter);
