@@ -18,7 +18,7 @@ const checkFatSecretExpirationToken = async (req, res, next) => {
             const token = result[0].token;
             const createdAt = result[0].created_at.toString();
             console.log(createdAt)
-            if (isTokenExpired(createdAt) || result.length === 0) {
+            if (result.length === 0 || isTokenExpired(createdAt)) {
                 const clientId = process.env.FAT_SECRET_CLIENT_ID;
                 const clientSecret = process.env.FAT_SECRET_CLIENT_SECRET;
                 requestAccessToken(clientId, clientSecret)
