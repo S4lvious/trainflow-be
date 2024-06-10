@@ -93,7 +93,7 @@ exports.login = async (req, res) => {
               if (result.length > 0) {
               const createdAt = result[0].created_at.toString();
               }
-              if (result.length === 0 || isTokenExpired(createdAt)) {
+              if (result.length === 0 || (createdAt && isTokenExpired(createdAt))) {
                 console.log('Token scaduto, lo rinnovo');
                 const clientId = process.env.FAT_SECRET_CLIENT_ID;
                 const clientSecret = process.env.FAT_SECRET_CLIENT_SECRET;
