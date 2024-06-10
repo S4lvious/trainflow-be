@@ -90,7 +90,8 @@ exports.login = async (req, res) => {
               });
               return;
             } else {
-              if (result.length === 0 || result[0].expires_in < Date.now()) {
+              const createdAt = result[0].created_at.toString();
+              if (result.length === 0 || isTokenExpired(createdAt)) {
                 console.log('Token scaduto, lo rinnovo');
                 const clientId = process.env.FAT_SECRET_CLIENT_ID;
                 const clientSecret = process.env.FAT_SECRET_CLIENT_SECRET;
@@ -148,6 +149,19 @@ exports.login = async (req, res) => {
   }
 
 };
+
+function isTokenExpired(createdAt) {
+    // Converti il timestamp in un oggetto Date
+    const createdAtDate = new Date(createdAt);
+    if (isNaN(createdAtDate.getTime())) {
+        throw new TypeError('Il timestamp fornito non è valido');
+    }
+
+    const createdAtTimestamp = createdAtDate.getTime();
+    const twentyFourHoursInMilliseconds = 24 * 60 * 60 * 1000;
+    const currentTimestamp = Date.now(); // Ottieni l'attuale timestamp in millisecondi
+    return currentTimestamp > (createdAtTimestamp + twentyFourHoursInMilliseconds);
+}
 
 
 
