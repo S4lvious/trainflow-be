@@ -1,5 +1,4 @@
-const crypto = require('crypto');
-const connection = require('../db'); // Importa la connessione al database da db.js
+const connection = require('../db');
 const jwt = require('jsonwebtoken');
 const {
   OAuth2Client
@@ -124,8 +123,11 @@ exports.login = async (req, res) => {
                     return;
                   });
               } else {
+                const token = jwt.sign(user, process.env.JWT_SECRET, {
+                  expiresIn: '1h'
+                });    
                 res.status(200).json({
-                  token,
+                  token: token,
                   userWithOutPassword: user
                 });
               }
