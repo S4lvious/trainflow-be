@@ -28,7 +28,7 @@ exports.login = async (req, res) => {
         console.log('arrivo qui 3');
         if (err) {
           res.status(500).json({
-            error: 'Errore durante il login'
+            error: err
           });
           return;
         }
