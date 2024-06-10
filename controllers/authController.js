@@ -90,7 +90,9 @@ exports.login = async (req, res) => {
               });
               return;
             } else {
+              if (result.length > 0) {
               const createdAt = result[0].created_at.toString();
+              }
               if (result.length === 0 || isTokenExpired(createdAt)) {
                 console.log('Token scaduto, lo rinnovo');
                 const clientId = process.env.FAT_SECRET_CLIENT_ID;
