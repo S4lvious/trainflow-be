@@ -24,7 +24,7 @@ exports.login = async (req, res) => {
       const query = 'SELECT * FROM users WHERE email = ?';
       console.log('arrivo qui 2');
       connection.query(query, [payload.email], (err, result) => {
-        console.log('arrivo qui 3');
+        console.log('arrivo qui 3.2');
         if (err) {
           res.status(500).json({
             error: err
