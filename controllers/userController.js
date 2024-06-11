@@ -6,8 +6,8 @@ exports.userList = async (req, res)  => {
     try {
         await connectDB();
         const request = new sql.Request();
-        if (req.query.id_utente) {
-            request.input('id_user', sql.Int, req.query.id_utente);
+        if (req.id_utente) {
+            request.input('id_user', sql.Int, req.id_utente);
             const result = await request.execute('Gs_user_getchildren');
             await sql.close(); 
             res.json(result.recordset);
@@ -26,7 +26,7 @@ exports.getUserById = async (req, res)  => {
     try {
         const { id } = req.params;
         const query = 'SELECT * FROM users WHERE id = ?';
-        connection.query(query, [id], (err, result) => {
+        connection(query, [id], (err, result) => {
             if (err) {
                 res.status(500).json({ error: 'Errore durante la ricerca dell\'utente' });
                 return;

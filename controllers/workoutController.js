@@ -27,7 +27,7 @@ exports.getExerciseByDateAndUserId = async (req, res) => {
       WHERE current_exercise.user_id = ? 
         AND current_exercise.date = ?
     `;
-          connection.query(query, [userId, date], (err, result) => {
+          connection(query, [userId, date], (err, result) => {
         if (err) {
           res.status(500).json({
             error: 'Errore nel recupero degli esercizi'
@@ -64,7 +64,7 @@ exports.getExerciseByDateAndUserId = async (req, res) => {
 exports.getAllExercises = async (req, res) => {
   try {
     const query = 'SELECT * FROM exercises';
-    connection.query(query, (err, result) => {
+    connection(query, (err, result) => {
       if (err) {
         res.status(500).json({
           error: 'Errore nel recupero degli esercizi'
@@ -101,7 +101,7 @@ exports.addExercise = async (req, res) => {
   } = req.body;
   try {
     const query = 'INSERT INTO current_exercise (user_id, date, exercise_id, exercise_reps, exercise_sets, exercise_kg) VALUES (?, ?, ?, ?, ?, ?)';
-    connection.query(query, [userId, date, id, reps, sets, kg], (err, result) => {
+    connection(query, [userId, date, id, reps, sets, kg], (err, result) => {
       if (err) {
         res.status(500).json({
           error: err
@@ -111,11 +111,11 @@ exports.addExercise = async (req, res) => {
 
       const exerciseId = result.insertId;
       const query = 'SELECT * FROM training_card WHERE user_id = ?';
-      connection.query(query, [userId], (err, result) => {
+      connection(query, [userId], (err, result) => {
         result.forEach(trainingCard => {
           const training_card_id = trainingCard.id;
           const query = 'SELECT * FROM exercise_training_card WHERE training_card_id = ?';
-          connection.query(query, [training_card_id], (err, result) => {
+          connection(query, [training_card_id], (err, result) => {
             if (err) {
               res.status(500).json({
                 error: err
@@ -127,7 +127,7 @@ exports.addExercise = async (req, res) => {
                 if (exerciseTrainingCard.exercise_id === id && (exerciseTrainingCard.exercise_kg < kg || !exerciseTrainingCard.exercise_kg) ) {
                   console.log('Aggiorno il peso');
                   const query = 'UPDATE exercise_training_card SET exercise_kg = ? WHERE training_card_id = ? AND exercise_id = ?';
-                  connection.query(query, [kg, training_card_id, id], (err, result) => {
+                  connection(query, [kg, training_card_id, id], (err, result) => {
                     if (err) {
                       res.status(500).json({
                         error: err
@@ -176,7 +176,7 @@ exports.viewReport = async (req, res) => {
           ce.date
   `;
 
-  connection.query(query, [userId], (error, results) => {
+  connection(query, [userId], (error, results) => {
       if (error) throw error;
       const data = {};
       console.log(results);
@@ -195,7 +195,7 @@ exports.viewReport = async (req, res) => {
 exports.getTrainingCardByUserId = async (req, res) => {
   const userId = req.params.userId;
   const query = 'SELECT * FROM training_card WHERE user_id = ?';
-  connection.query(query, [userId], (error, results) => {
+  connection(query, [userId], (error, results) => {
     if (error) {
       res.status(500).json({
         error: error
@@ -215,7 +215,7 @@ exports.createTrainingCard = async (req, res) => {
     exercises
   } = req.body;
   const query = 'INSERT INTO training_card (user_id, training_card_name) VALUES (?, ?)';
-  connection.query(query, [userId, trainingCardName], (error, results) => {
+  connection(query, [userId, trainingCardName], (error, results) => {
     if (error) {
       res.status(500).json({
         error: error
@@ -225,7 +225,7 @@ exports.createTrainingCard = async (req, res) => {
     const trainingCardId = results.insertId;
     const values = exercises.map(exercise => [trainingCardId, exercise.exerciseId, exercise.reps, exercise.sets]);
     const query = 'INSERT INTO exercise_training_card(training_card_id, exercise_id, exercise_rep, exercise_set) VALUES ?';
-    connection.query(query, [values], (error, results) => {
+    connection(query, [values], (error, results) => {
       if (error) {
         res.status(500).json({
           error: error
@@ -242,7 +242,7 @@ exports.createTrainingCard = async (req, res) => {
 exports.getTrainingCardExercisesById = async (req, res) => {
   const trainingCardId = req.params.id;
   const query = 'SELECT * FROM exercise_training_card etc JOIN exercises e ON etc.exercise_id = e.id  WHERE training_card_id = ?';
-  connection.query(query, [trainingCardId], (error, results) => {
+  connection(query, [trainingCardId], (error, results) => {
     if (error) {
       res.status(500).json({
         error: error
@@ -256,7 +256,7 @@ exports.getTrainingCardExercisesById = async (req, res) => {
 exports.deleteExercise = async (req, res) => {
   const id = req.params.id;
   const query = 'DELETE FROM current_exercise WHERE id = ?';
-  connection.query(query, [id], (error, results) => {
+  connection(query, [id], (error, results) => {
     if (error) {
       res.status(500).json({
         error: error
