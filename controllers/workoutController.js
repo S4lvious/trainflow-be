@@ -162,18 +162,28 @@ exports.viewReport = async (req, res) => {
 
   const userId = req.params.userId;
   const query = `
-      SELECT
-          e.name,
-          ce.date,
-          ce.exercise_kg
-      FROM
-          current_exercise ce
-      JOIN
-          exercises e ON ce.exercise_id = e.id
-      WHERE
-          ce.user_id = ?
-      ORDER BY
-          ce.date
+SELECT
+    e.name,
+    ce.date,
+    ce.exercise_kg
+FROM
+    current_exercise ce
+JOIN
+    exercises e ON ce.exercise_id = e.id
+JOIN
+    (SELECT
+         ce1.date,
+         ce1.exercise_id,
+         MAX(ce1.exercise_kg) AS max_kg
+     FROM
+         current_exercise ce1
+     GROUP BY
+         ce1.date,
+         ce1.exercise_id) ce_max ON ce.date = ce_max.date AND ce.exercise_id = ce_max.exercise_id AND ce.exercise_kg = ce_max.max_kg
+WHERE
+    ce.user_id = ?
+ORDER BY
+    ce.date;
   `;
 
   connection(query, [userId], (error, results) => {
