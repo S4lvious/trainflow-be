@@ -23,18 +23,18 @@ exports.login = async (req, res) => {
       console.log('arrivo qui');
       const query = 'SELECT * FROM users WHERE email = ?';
       console.log('arrivo qui 2');
-      connection.query(query, [payload.email], (err, result) => {
-        console.log('arrivo qui 3');
+      connection(query, [payload.email], (err, result) => {
+        console.log('arrivo qui 3.2');
         if (err) {
           res.status(500).json({
-            error: 'Errore durante il login'
+            error: err
           });
           return;
         }
         if (result.length === 0) {
           console.log('Utente non trovato, lo inserisco nel database');
           const query = 'INSERT INTO users (username, isAdmin, email, profile_pic) VALUES (?, ?, ?, ?)';
-          connection.query(query, [payload.name, 0, payload.email, payload.picture], (err, result) => {
+          connection(query, [payload.name, 0, payload.email, payload.picture], (err, result) => {
             if (err) {
               res.status(500).json({
                 error: 'Errore durante la registrazione'
@@ -55,7 +55,7 @@ exports.login = async (req, res) => {
             requestAccessToken(clientId, clientSecret)
               .then(tokenFatSecret => {
                 const query = 'INSERT INTO fat_secret_user_token (user_id,token,expires_in) VALUES (?, ?, ?)';
-                connection.query(query, [user.id, tokenFatSecret.access_token, tokenFatSecret.expires_in], (err, result) => {
+                connection(query, [user.id, tokenFatSecret.access_token, tokenFatSecret.expires_in], (err, result) => {
                   if (err) {
                     res.status(500).json({
                       error: 'Errore durante la registrazione'
@@ -82,7 +82,7 @@ exports.login = async (req, res) => {
         } else {
           const user = JSON.parse(JSON.stringify(result[0]));
           const query = 'SELECT * FROM fat_secret_user_token WHERE user_id = ?';
-          connection.query(query, [user.id], (err, result) => {
+          connection(query, [user.id], (err, result) => {
             if (err) {
               res.status(500).json({
                 error: 'Errore durante il login'
@@ -98,7 +98,7 @@ exports.login = async (req, res) => {
                   .then(tokenFatSecret => {
                     console.log('Token rinnovato, lo inserisco nel database', tokenFatSecret);
                     const query = 'INSERT INTO fat_secret_user_token (user_id,token,expires_in) VALUES (?, ?, ?)';
-                    connection.query(query, [user.id, tokenFatSecret.access_token, tokenFatSecret.expires_in], (err, result) => {
+                    connection(query, [user.id, tokenFatSecret.access_token, tokenFatSecret.expires_in], (err, result) => {
                       if (err) {
                         console.log(err);
                         res.status(500).json({

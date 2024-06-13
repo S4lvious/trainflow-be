@@ -8,7 +8,7 @@ const qs = require('qs');
 const checkFatSecretExpirationToken = async (req, res, next) => {
     const userId = req.user.id;
     const query = 'SELECT * FROM fat_secret_user_token WHERE user_id = ?';
-    connect.query(query, [userId], (err, result) => {
+    connect(query, [userId], (err, result) => {
         if (err || result.length === 0) {
             res.status(500).json({
                 error: 'Errore durante il recupero del token'
@@ -24,7 +24,7 @@ const checkFatSecretExpirationToken = async (req, res, next) => {
                 requestAccessToken(clientId, clientSecret)
                     .then(tokenFatSecret => {
                         const query = 'UPDATE fat_secret_user_token SET token = ?, expires_in = ? WHERE user_id = ?';
-                        connect.query(query, [tokenFatSecret.access_token, tokenFatSecret.expires_in, userId], (err, result) => {
+                        connect(query, [tokenFatSecret.access_token, tokenFatSecret.expires_in, userId], (err, result) => {
                             if (err) {
                                 res.status(500).json({
                                     error: 'Errore durante la registrazione'

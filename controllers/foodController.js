@@ -13,7 +13,7 @@ exports.searchFood = async (req, res) => {
     const { foodName, userId } = req.params;
     try {
         const query = 'SELECT * FROM fat_secret_user_token WHERE user_id = ?';
-        connection.query(query, [userId], (err, result) => {
+        connection(query, [userId], (err, result) => {
             if (err || result.length === 0) {
                 res.status(500).json({
                     error: 'Errore durante il recupero del token'
@@ -54,7 +54,7 @@ exports.getFoodById = async (req, res) => {
     const { foodId, userId } = req.params;
     try {
         const query = 'SELECT * FROM fat_secret_user_token WHERE user_id = ?';
-        connection.query(query, [userId], (err, result) => {
+        connection(query, [userId], (err, result) => {
             if (err || result.length === 0) {
                 res.status(500).json({
                     error: 'Errore durante il recupero del token'
@@ -94,7 +94,7 @@ exports.getFoodByUser = async (req, res) => {
     const { userId, date } = req.params;
     try {
         const query = 'SELECT * FROM current_food WHERE user_id = ? AND date = ?';
-        connection.query(query, [userId, date], (err, result) => {
+        connection(query, [userId, date], (err, result) => {
             if (err) {
                 res.status(500).json({
                     error: 'Errore durante il recupero del cibo'
@@ -119,7 +119,7 @@ exports.addFood = async (req, res) => {
 
     try {
         const query = 'INSERT INTO current_food (food_id,food_name,user_id, grams, food_qty,food_calories,food_proteins, food_carbs,food_fats, date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)';
-        connection.query(query, [food.foodId,food.name, userId, food.grams,food.quantity,food.calories,food.proteins,food.carbs,food.fats,date], (err, result) => {
+        connection(query, [food.foodId,food.name, userId, food.grams,food.quantity,food.calories,food.proteins,food.carbs,food.fats,date], (err, result) => {
             if (err) {
                 res.status(500).json({
                     error: 'Errore durante l\'inserimento del cibo'
@@ -143,7 +143,7 @@ exports.deleteFood = async (req, res) => {
     const { id } = req.params;
     try {
         const query = 'DELETE FROM current_food WHERE id_current = ?';
-        connection.query(query, [id], (err, result) => {
+        connection(query, [id], (err, result) => {
             if (err) {
                 res.status(500).json({
                     error: err

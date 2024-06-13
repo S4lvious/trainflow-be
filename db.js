@@ -5,20 +5,35 @@ require('dotenv').config();
 const app = express();
 
 // Configurazione della connessione al database MySQL
-const connection = mysql.createConnection({
+const pool = mysql.createPool({
   host: process.env.DB_HOST,
   user: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
-  database: process.env.DB_DATABASE
+  database: process.env.DB_DATABASE,
+  connectionLimit: parseInt(process.env.DB_CONNECTION_LIMIT)
 });
 
-// Connessione al database MySQL
-connection.connect((err) => {
-  if (err) {
-    console.error('Errore di connessione al database:', err);
-    return;
-  }
-  console.log('Connessione al database MySQL riuscita!');
-});
+function executeQuery(query, params, callback) {
+  pool.getConnection((err, connection) => {
+    if (err) {
+      callback(err, null);
+      return;
+    }
+    connection.query(query, params, (error, results) => {
+      connection.release();
 
-module.exports = connection;
+      if (error) {
+        callback(error, null);
+        return;
+      }
+      callback(null, results);
+    });
+  });
+}
+
+
+
+
+
+
+module.exports = executeQuery;
