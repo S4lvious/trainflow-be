@@ -6,7 +6,7 @@ const authenticateJWT = require('../middleware/authMiddleware');
 // Rotte per le API
 router.get('/getExerciseByDateAndUserId/:userId/:date', authenticateJWT, workoutController.getExerciseByDateAndUserId);
 router.get('/getAllExercises', authenticateJWT, workoutController.getAllExercises);
-router.get('/getAllExercisesByTrainingCard/:userId', authenticateJWT, workoutController.getAllExercises);
+router.get('/getAllExercisesByTrainingCard/:userId', authenticateJWT, workoutController.getAllExercisesByTrainingCard);
 
 router.post('/addExercise', authenticateJWT, workoutController.addExercise);
 router.get('/viewReport/:userId', authenticateJWT, workoutController.viewReport);
