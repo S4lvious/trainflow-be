@@ -90,6 +90,57 @@ exports.getAllExercises = async (req, res) => {
   }
 }
 
+exports.getAllExercisesByTrainingCard = async (req, res) => {
+  const userId = req.params.userId;
+  try {
+    const query = 'SELECT * FROM training_card WHERE user_id = ?';
+    connection(query, [userId], (err, result) => {
+      if (err) {
+        res.status(500).json({
+          error: 'Errore nel recupero delle schede di allenamento'
+        });
+        return;
+      } else {
+        const trainingCards = [];
+        result.forEach(trainingCard => {
+          const trainingCardId = trainingCard.id;
+          const query = 'SELECT * FROM exercise_training_card etc JOIN exercises e ON etc.exercise_id = e.id WHERE training_card_id = ?';
+          connection(query, [trainingCardId], (err, result) => {
+            if (err) {
+              res.status(500).json({
+                error: 'Errore nel recupero degli esercizi'
+              });
+              return;
+            } else {
+              const exercises = [];
+              result.forEach(exercise => {
+                exercises.push({
+                  id: exercise.id,
+                  name: exercise.name,
+                  reps: exercise.exercise_rep,
+                  sets: exercise.exercise_set
+                });
+              });
+              trainingCards.push({
+                id: trainingCardId,
+                name: trainingCard.training_card_name,
+                exercises: exercises
+              });
+            }
+          });
+        });
+        res.status(200).json(trainingCards);
+      }
+
+    });
+  } catch (error) {
+    res.status(500).json({
+      error: error
+    });
+    return;
+  }
+}
+
 exports.addExercise = async (req, res) => {
   const {
     userId,
